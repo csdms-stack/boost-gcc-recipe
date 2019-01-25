@@ -1,0 +1,47 @@
+{% set version = "1.67.0" %}
+{% set filename = "boost_%s.tar.bz2" % version.replace(".", "_") %}
+
+package:
+  name: boost-gcc
+  version: {{ version }}
+
+source:
+  url: https://dl.bintray.com/boostorg/release/{{ version }}/source/{{ filename }}
+  sha256: 2684c972994ee57fc5632e03bf044746f6eb45d4920c343937a465fd67a5adba
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - gcc
+  run:
+    - icu
+    - bzip2
+    - xz
+    - zlib
+
+test:
+  commands:
+    # Verify libraries.
+    {% set boost_libs = [
+            "filesystem",
+            "program_options",
+            "regex",
+            "serialization",
+            "signals",
+            "system"
+    ] %}
+    {% for each_boost_lib in boost_libs %}
+    - test -f $PREFIX/lib/libboost_{{ each_boost_lib }}.a      # [unix]
+    - test -f $PREFIX/lib/libboost_{{ each_boost_lib }}.dylib  # [osx]
+    {% endfor %}
+    - conda inspect linkages -p $PREFIX $PKG_NAME  # [not win]
+    - conda inspect objects -p $PREFIX $PKG_NAME   # [osx]
+
+about:
+  home: http://www.boost.org/
+  license: Boost-1.0
+  summary:
+    Free peer-reviewed portable C++ source libraries. This version is
+    built with gcc and a reduced set of libraries.
